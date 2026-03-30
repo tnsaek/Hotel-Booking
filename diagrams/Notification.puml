@@ -1,0 +1,10 @@
+@startuml
+
+participant "Payment API" as Payment
+participant "Message Queue (Kafka/SQS)" as MQ
+participant "Notification Service" as Notify
+Payment --> MQ : publish booking confirmed event
+Mq --> Notify : consume event
+Notify --> Notify : send Email/SMS
+
+@enduml

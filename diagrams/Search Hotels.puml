@@ -1,0 +1,14 @@
+@startuml
+
+actor User
+participant Frontend
+participant "Search Api" as API
+database DB
+
+User --> Frontend : Enter location/date
+Frontend --> API : search request
+API --> DB : query hotels/rooms
+DB --> API : available rooms
+API --> Frontend : response
+Frontend --> User : show results
+@enduml

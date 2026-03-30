@@ -1,0 +1,23 @@
+@startuml
+
+actor User
+participant Frontend
+participant "Payment API" as payment
+participant "Payment Gateway" as Gateway
+database DB
+
+User --> Frontend : Click Pay
+Frontend --> Payment : initiate payment
+Payment --> Gateway : process payment
+Gateway --> Payment : success/failure
+
+alt Success
+    Payment --> DB : update booking (Confirmed)
+    Payment --> Frontend : success
+else Failure
+    Payment --> Frontend : failed
+end
+
+Frontend --> User : payment result
+
+@enduml

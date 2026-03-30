@@ -1,0 +1,14 @@
+@startuml
+
+actor Admin
+participant Frontend
+participant "Admin API" as API
+database DB
+
+Admin --> Frontend : add/update hotel
+Frontend --> API : request
+API --> DB : save/update database
+DB --> API : success
+API --> Frontend : response
+Frontend --> Admin : confirmation
+@enduml

@@ -1,0 +1,14 @@
+@startuml
+
+actor User
+participant Frontend
+participant "Hotel API" as API
+database DB
+
+User --> Frontend : Select "Hotel API"
+Frontend --> API : get hotel details
+API --> DB : fetch hotel + rooms + amenities
+DB --> API : data
+API --> Frontend : response
+Frontend --> User : display details
+@enduml

@@ -1,0 +1,78 @@
+@startuml
+
+enum Role {
+    CUSTOMER
+    ADMIN
+}
+
+enum BookingStatus {
+    PENDING
+    CONFIRMED
+    CANCELLED
+}
+
+enum PaymentStatus {
+    INITIATED
+    SUCCESS
+    FAILED
+    REFUNDED
+}
+
+enum RoomType {
+    SINGLE
+    DOUBLE
+    SUITE
+}
+
+class User {
+    Long id
+    String name
+    String email
+    String password
+    String phone
+    Role role
+}
+
+class Hotel {
+    Long id
+    String name
+    String location
+    String description
+}
+
+class Room {
+    Long id
+    RoomType type
+    Double price
+    boolean available
+}
+
+class Booking {
+    Long id
+    LocalDate checkIn
+    LocalDate checkOUt
+    BookingStatus status
+    Double totalAmount
+}
+
+class Payment {
+    Long id
+    Double amount
+    PaymentStatus status
+    String transactionId
+}
+
+class Notification {
+    Long id
+    String type
+    String message
+    LocalDate createdAt
+}
+
+User "1" --> "0..*" Booking : makes
+Hotel "1" --> "1..*" Room : has
+Room "1" --> "0..*" Booking : booked in
+Booking "1" --> "0..*" Notification : triggers
+User "1" --> "0..*" Notification : receives
+
+@enduml

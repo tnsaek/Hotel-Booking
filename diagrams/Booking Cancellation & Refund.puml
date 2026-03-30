@@ -1,0 +1,19 @@
+@startuml
+
+actor User
+participant Frontend
+participant "Booking API" as Booking
+participant "Payment API" as Payment
+participant "Payment Gateway" as Gateway
+database DB
+
+User --> Frontend : Cancel booking
+Frontend --> Booking : cancel request
+Booking --> Payment : initiate refund
+Payment --> Gateway : process refund
+Gateway --> Payment : refund status
+
+Payment --> DB : update booking (cancelled)
+Booking --> Frontend : success
+Frontend --> User : cancellation result
+@enduml

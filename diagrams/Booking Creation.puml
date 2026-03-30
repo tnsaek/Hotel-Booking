@@ -1,0 +1,20 @@
+@startuml
+
+actor User
+participant Frontend
+participant "Booking API" as Booking
+database DB
+
+User --> Frontend : Select room & dates
+Frontend --> Booking : create booking
+Booking --> DB : check availability
+
+alt Room available
+    Booking --> DB : create booking (pending)
+    Booking --> Frontend : bookingId
+else Not available
+    Booking --> Frontend : error
+end
+
+Frontend --> User : response
+@enduml

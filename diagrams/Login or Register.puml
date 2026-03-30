@@ -1,0 +1,14 @@
+@startuml
+
+actor User
+participant frontend
+participant "Auth Service" as auth
+database DB
+
+User --> frontend : enter credentials
+frontend --> Auth : login / register request
+Auth --> DB : validate/save user
+DB --> Auth : result
+Auth --> frontend : JWT token
+frontend --> User : Success response
+@enduml
