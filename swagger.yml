@@ -1,0 +1,260 @@
+openapi: 3.0.3
+info:
+  title: Hotel Booking API
+  version: 1.0.0
+  description: REST APIs for Hotel Booking System
+
+servers:
+  - url: http://localhost:8080/
+
+tags:
+  - name: Auth
+  - name: Hotel
+  - name: Booking
+  - name: Payment
+  - name: Notification
+
+paths:
+
+  # ---------- AUTH ----------
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        201:
+          description: User created
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        200:
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  # ---------- HOTEL ----------
+  /hotels:
+    get:
+      tags: [Hotel]
+      summary: Get all hotels
+      responses:
+        200:
+          description: List of hotels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Hotel'
+
+  /hotels/{hotelId}:
+    get:
+      tags: [Hotel]
+      summary: Get hotel details
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Hotel details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotel'
+
+  # ---------- SEARCH ----------
+  /hotels/search:
+    get:
+      tags: [Hotel]
+      summary: Search hotels by location and date
+      parameters:
+        - name: location
+          in: query
+          schema:
+            type: string
+        - name: checkIn
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: checkOut
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        200:
+          description: Available hotels
+
+  # ---------- BOOKING ----------
+  /bookings:
+    post:
+      tags: [Booking]
+      summary: Create booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequest'
+      responses:
+        201:
+          description: Booking created
+
+  /bookings/{bookingId}:
+    get:
+      tags: [Booking]
+      summary: Get booking details
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Booking details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+
+  /bookings/{bookingId}/cancel:
+    post:
+      tags: [Booking]
+      summary: Cancel booking
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Booking cancelled
+
+  # ---------- PAYMENT ----------
+  /payments:
+    post:
+      tags: [Payment]
+      summary: Process payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        200:
+          description: Payment result
+
+  # ---------- NOTIFICATION ----------
+  /notifications/{userId}:
+    get:
+      tags: [Notification]
+      summary: Get user notifications
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of notifications
+
+# ===================== COMPONENTS =====================
+components:
+
+  schemas:
+
+    UserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        phone:
+          type: string
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+
+    Hotel:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        location:
+          type: string
+        description:
+          type: string
+
+    BookingRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+        roomId:
+          type: integer
+        checkIn:
+          type: string
+          format: date
+        checkOut:
+          type: string
+          format: date
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+        totalAmount:
+          type: number
+
+    PaymentRequest:
+      type: object
+      properties:
+        bookingId:
+          type: integer
+        amount:
+          type: number
+
