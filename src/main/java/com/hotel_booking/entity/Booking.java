@@ -29,7 +29,7 @@ public class Booking {
     private User user;
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
     private Payment payment;
-    private LocalDate checkInData;
+    private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private Double totalPrice;
     @Enumerated(EnumType.STRING)
