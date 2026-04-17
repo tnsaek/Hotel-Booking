@@ -30,6 +30,7 @@ public class User {
     private String password;
     @Enumerated(EnumType.STRING)
     private UserRole role;
+    private boolean active;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Booking> bookings;
 }

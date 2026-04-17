@@ -1,4 +1,4 @@
-package com.hotel_booking.dto;
+package com.hotel_booking.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
