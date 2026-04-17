@@ -1,7 +1,7 @@
 package com.hotel_booking.mapper;
 
-import com.hotel_booking.dto.BookingRequest;
-import com.hotel_booking.dto.BookingResponse;
+import com.hotel_booking.dto.request.BookingRequest;
+import com.hotel_booking.dto.response.BookingResponse;
 import com.hotel_booking.entity.Booking;
 import com.hotel_booking.entity.Room;
 import com.hotel_booking.entity.User;

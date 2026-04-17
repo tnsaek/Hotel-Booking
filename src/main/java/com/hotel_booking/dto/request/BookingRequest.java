@@ -1,5 +1,6 @@
-package com.hotel_booking.dto;
+package com.hotel_booking.dto.request;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,10 +12,13 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookingResponse {
-    private Long bookingId;
-    private String status;
-    private Double totalAmount;
+public class BookingRequest {
+    @NotNull
+    private Long userId;
+    @NotNull
+    private Long roomId;
+    @NotNull
     private LocalDate checkIn;
+    @NotNull
     private LocalDate checkOut;
 }

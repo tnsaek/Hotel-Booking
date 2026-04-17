@@ -1,7 +1,7 @@
 package com.hotel_booking.service.impl;
 
-import com.hotel_booking.dto.BookingRequest;
-import com.hotel_booking.dto.BookingResponse;
+import com.hotel_booking.dto.request.BookingRequest;
+import com.hotel_booking.dto.response.BookingResponse;
 import com.hotel_booking.entity.Booking;
 import com.hotel_booking.entity.Room;
 import com.hotel_booking.entity.User;
@@ -15,6 +15,8 @@ import com.hotel_booking.service.BookingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +58,22 @@ public class BookingServiceImpl implements BookingService {
     public void cancelBooking(Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+        if(booking.getBookingStatus() == BookingStatus.CONFIRMED){
+            throw new IllegalStateException("Can not cancel confirmed booking");
+        }
         booking.setBookingStatus(BookingStatus.CANCELLED);
+    }
+
+    @Override
+    public List<BookingResponse> getUserBookings(Long userId) {
+        return bookingRepository.findByUserId(userId)
+                .stream()
+                .map(booking -> BookingResponse.builder()
+                        .bookingId(booking.getId())
+                        .status(booking.getBookingStatus().name())
+                        .totalAmount(booking.getTotalPrice())
+                        .checkIn(booking.getCheckInDate())
+                        .checkOut(booking.getCheckOutDate())
+                        .build()).toList();
     }
 }

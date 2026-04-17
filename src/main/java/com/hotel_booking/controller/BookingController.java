@@ -1,13 +1,15 @@
 package com.hotel_booking.controller;
 
-import com.hotel_booking.dto.BookingRequest;
-import com.hotel_booking.dto.BookingResponse;
+import com.hotel_booking.dto.request.BookingRequest;
+import com.hotel_booking.dto.response.BookingResponse;
 import com.hotel_booking.service.BookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/bookings")
@@ -31,5 +33,10 @@ public class BookingController {
     public ResponseEntity<Void> cancel(@PathVariable Long id){
         bookingService.cancelBooking(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/user/{userId}")
+    public List<BookingResponse> getUserBookings(@PathVariable Long userId){
+        return bookingService.getUserBookings(userId);
     }
 }
