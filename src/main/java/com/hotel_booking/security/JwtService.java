@@ -1,6 +1,7 @@
 package com.hotel_booking.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +36,7 @@ public class JwtService {
                 .signWith(key)
                 .compact();
     }
-    
+
     public String getUserName(String token){
         return extractClaims(token, Claims::getSubject);
     }
@@ -45,11 +46,14 @@ public class JwtService {
     }
 
     public boolean validateToken(String token, UserDetails userDetails){
-        final String userName = getUserName(token);
-        return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return !isTokenExpired(token) && getUserName(token).equals(userDetails.getUsername());
     }
 
     private boolean isTokenExpired(String token) {
-        return extractClaims(token, Claims::getExpiration).before(new Date());
+        try {
+            return extractClaims(token, Claims::getExpiration).before(new Date());
+        } catch (ExpiredJwtException exception) {
+            return true;
+        }
     }
 }

@@ -59,4 +59,21 @@ public class HotelServiceImpl implements HotelService {
         }
         hotelRepository.deleteById(id);
     }
+
+    @Override
+    public Page<HotelDto> search(String name, String location, Pageable pageable) {
+        if (name != null && !name.isEmpty() && location != null && !location.isEmpty()) {
+            return hotelRepository.findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(name, location, pageable)
+                    .map(hotelMapper::toDto);
+        } else if (name != null && !name.isEmpty()) {
+            return hotelRepository.findByNameContainingIgnoreCase(name, pageable)
+                    .map(hotelMapper::toDto);
+        } else if (location != null && !location.isEmpty()) {
+            return hotelRepository.findByLocationContainingIgnoreCase(location, pageable)
+                    .map(hotelMapper::toDto);
+        } else {
+            return hotelRepository.findAll(pageable)
+                    .map(hotelMapper::toDto);
+        }
+    }
 }

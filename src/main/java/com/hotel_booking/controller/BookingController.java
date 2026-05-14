@@ -1,6 +1,7 @@
 package com.hotel_booking.controller;
 
 import com.hotel_booking.dto.request.BookingRequest;
+import com.hotel_booking.dto.request.BookingUpdateRequest;
 import com.hotel_booking.dto.response.BookingResponse;
 import com.hotel_booking.service.BookingService;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/bookings")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class BookingController {
 
     private final BookingService bookingService;
@@ -27,6 +29,11 @@ public class BookingController {
     @GetMapping("/{id}")
     public ResponseEntity<BookingResponse> get(@PathVariable Long id){
         return ResponseEntity.ok(bookingService.getBooking(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BookingResponse> update(@PathVariable Long id, @Valid @RequestBody BookingUpdateRequest request){
+        return ResponseEntity.ok(bookingService.updateBooking(id, request));
     }
 
     @DeleteMapping("/{id}")

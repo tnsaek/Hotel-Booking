@@ -52,9 +52,16 @@ public class RoomServiceImpl implements RoomService {
     public RoomDto update(Long id, RoomDto dto) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+        if (dto.getHotelId() != null && !room.getHotel().getId().equals(dto.getHotelId())) {
+            Hotel hotel = hotelRepository.findById(dto.getHotelId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
+            room.setHotel(hotel);
+        }
+        room.setRoomNumber(dto.getRoomNumber());
         room.setType(RoomType.valueOf(dto.getType()));
         room.setPricePerNight(dto.getPrice());
         room.setAvailable(dto.isAvailable());
+        room.setDescription(dto.getDescription());
         return roomMapper.toDto(room);
     }
 

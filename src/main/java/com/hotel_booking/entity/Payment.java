@@ -21,7 +21,11 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String transactionId;
+    private String pendingTransactionId;
+    private String paymentIntentId;
     private Double amount;
+    private Double paidAmount;
+    private Double refundedAmount;
     private LocalDateTime paymentDate;
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;

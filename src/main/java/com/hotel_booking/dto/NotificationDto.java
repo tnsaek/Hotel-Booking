@@ -15,5 +15,6 @@ public class NotificationDto {
     private Long id;
     private String type;
     private String message;
+    private boolean read;
     private LocalDateTime createdAt;
 }

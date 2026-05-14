@@ -21,8 +21,16 @@ public class Notification {
     private Long id;
     private String type;
     private String body;
-    private final LocalDateTime createdAt = LocalDateTime.now();
+    private boolean read;
+    private LocalDateTime createdAt;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @PrePersist
+    void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }

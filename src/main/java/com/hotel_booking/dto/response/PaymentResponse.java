@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class PaymentResponse {
     private String status;
     private String transactionId;
+    private String checkoutUrl;
 }

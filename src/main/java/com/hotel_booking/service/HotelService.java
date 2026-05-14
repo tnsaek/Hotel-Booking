@@ -10,4 +10,5 @@ public interface HotelService {
     Page<HotelDto> getAll(Pageable pageable);
     HotelDto update(Long id, HotelDto dto);
     void delete(Long id);
+    Page<HotelDto> search(String name, String location, Pageable pageable);
 }

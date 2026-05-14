@@ -29,9 +29,12 @@ public class Booking {
     private User user;
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
     private Payment payment;
+    @Column(name = "check_in_date", nullable = false)
     private LocalDate checkInDate;
+    @Column(name = "check_out_date", nullable = false)
     private LocalDate checkOutDate;
     private Double totalPrice;
     @Enumerated(EnumType.STRING)
     private BookingStatus bookingStatus;
+    private boolean confirmationEmailSent;
 }

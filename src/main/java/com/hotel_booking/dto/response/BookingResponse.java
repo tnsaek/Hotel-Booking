@@ -17,4 +17,11 @@ public class BookingResponse {
     private Double totalAmount;
     private LocalDate checkIn;
     private LocalDate checkOut;
+    private Long roomId;
+    private Integer roomNumber;
+    private String roomType;
+    private String hotelName;
+    private Boolean paymentRequired;
+    private Double additionalAmount;
+    private String checkoutUrl;
 }

@@ -17,6 +17,13 @@ public class BookingMapper {
 
     public BookingResponse toDto(Booking booking){
         return BookingResponse.builder().bookingId(booking.getId()).status(booking.getBookingStatus().name())
-                .totalAmount(booking.getTotalPrice()).checkIn(booking.getCheckInDate()).checkOut(booking.getCheckOutDate()).build();
+                .totalAmount(booking.getTotalPrice())
+                .checkIn(booking.getCheckInDate())
+                .checkOut(booking.getCheckOutDate())
+                .roomId(booking.getRoom().getId())
+                .roomNumber(booking.getRoom().getRoomNumber())
+                .roomType(booking.getRoom().getType().name())
+                .hotelName(booking.getRoom().getHotel().getName())
+                .build();
     }
 }
