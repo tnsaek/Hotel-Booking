@@ -46,6 +46,7 @@ public class SecurityFilter {
                         .requestMatchers(HttpMethod.POST, "/api/payment/webhook").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/hotels/liteapi/bookable-room").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/rooms/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasAuthority("ADMIN")
