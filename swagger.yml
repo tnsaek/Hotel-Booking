@@ -2,39 +2,47 @@ openapi: 3.0.3
 info:
   title: Hotel Booking API
   version: 1.0.0
-  description: REST APIs for Hotel Booking System
+  description: REST APIs for the Hotel Booking System.
 
 servers:
-  - url: http://localhost:8080/
+  - url: http://localhost:8080/api
+    description: Local backend API
 
 tags:
   - name: Auth
-  - name: Hotel
-  - name: Booking
-  - name: Payment
-  - name: Notification
+  - name: Hotels
+  - name: Rooms
+  - name: Bookings
+  - name: Payments
+  - name: Notifications
 
 paths:
-
-  # ---------- AUTH ----------
   /auth/register:
     post:
       tags: [Auth]
-      summary: Register user
+      summary: Register a customer account
+      operationId: register
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRequest'
+              $ref: '#/components/schemas/RegisterRequest'
       responses:
-        201:
-          description: User created
+        '200':
+          description: Registered user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /auth/login:
     post:
       tags: [Auth]
-      summary: Login user
+      summary: Log in and receive a JWT
+      operationId: login
       requestBody:
         required: true
         content:
@@ -42,75 +50,345 @@ paths:
             schema:
               $ref: '#/components/schemas/LoginRequest'
       responses:
-        200:
-          description: JWT token
+        '200':
+          description: Authentication token and user profile
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-  # ---------- HOTEL ----------
   /hotels:
     get:
-      tags: [Hotel]
-      summary: Get all hotels
+      tags: [Hotels]
+      summary: List hotels
+      operationId: listHotels
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
       responses:
-        200:
-          description: List of hotels
+        '200':
+          description: Page of hotels
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotelPage'
+    post:
+      tags: [Hotels]
+      summary: Create a hotel
+      operationId: createHotel
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelDto'
+      responses:
+        '201':
+          description: Created hotel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotelDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /hotels/search:
+    get:
+      tags: [Hotels]
+      summary: Search local hotels by name and location
+      operationId: searchHotels
+      parameters:
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: location
+          in: query
+          required: false
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Page of matching hotels
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotelPage'
+
+  /hotels/liteapi/search:
+    get:
+      tags: [Hotels]
+      summary: Search external LiteAPI hotel offers
+      operationId: searchLiteApiHotels
+      parameters:
+        - name: cityName
+          in: query
+          required: true
+          schema:
+            type: string
+          example: New York
+        - name: countryCode
+          in: query
+          required: true
+          schema:
+            type: string
+          example: US
+        - name: checkInDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: checkOutDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: adults
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: roomQuantity
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: currency
+          in: query
+          required: false
+          schema:
+            type: string
+            default: USD
+        - name: guestNationality
+          in: query
+          required: false
+          schema:
+            type: string
+            default: US
+      responses:
+        '200':
+          description: External hotel offers
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Hotel'
+                  $ref: '#/components/schemas/ExternalHotelOfferDto'
 
-  /hotels/{hotelId}:
+  /hotels/liteapi/bookable-room:
+    post:
+      tags: [Hotels]
+      summary: Create or reuse a local bookable room from a LiteAPI offer
+      operationId: createBookableRoomFromLiteApi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LiteApiBookableRoomRequest'
+      responses:
+        '200':
+          description: Local room that can be booked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /hotels/{id}:
     get:
-      tags: [Hotel]
+      tags: [Hotels]
       summary: Get hotel details
+      operationId: getHotel
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Hotel details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotelDto'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Hotels]
+      summary: Update a hotel
+      operationId: updateHotel
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelDto'
+      responses:
+        '200':
+          description: Updated hotel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotelDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Hotels]
+      summary: Delete a hotel
+      operationId: deleteHotel
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Hotel deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /rooms:
+    post:
+      tags: [Rooms]
+      summary: Create a room
+      operationId: createRoom
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomDto'
+      responses:
+        '201':
+          description: Created room
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /rooms/{id}:
+    get:
+      tags: [Rooms]
+      summary: Get room details
+      operationId: getRoom
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Room details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomDto'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Rooms]
+      summary: Update a room
+      operationId: updateRoom
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomDto'
+      responses:
+        '200':
+          description: Updated room
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Rooms]
+      summary: Delete a room
+      operationId: deleteRoom
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Room deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /rooms/hotel/{hotelId}:
+    get:
+      tags: [Rooms]
+      summary: List rooms for a hotel
+      operationId: listRoomsByHotel
       parameters:
         - name: hotelId
           in: path
           required: true
           schema:
             type: integer
+            format: int64
       responses:
-        200:
-          description: Hotel details
+        '200':
+          description: Rooms for the hotel
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Hotel'
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomDto'
 
-  # ---------- SEARCH ----------
-  /hotels/search:
-    get:
-      tags: [Hotel]
-      summary: Search hotels by location and date
-      parameters:
-        - name: location
-          in: query
-          schema:
-            type: string
-        - name: checkIn
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: checkOut
-          in: query
-          schema:
-            type: string
-            format: date
-      responses:
-        200:
-          description: Available hotels
-
-  # ---------- BOOKING ----------
   /bookings:
     post:
-      tags: [Booking]
-      summary: Create booking
+      tags: [Bookings]
+      summary: Create a booking
+      operationId: createBooking
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -118,46 +396,115 @@ paths:
             schema:
               $ref: '#/components/schemas/BookingRequest'
       responses:
-        201:
-          description: Booking created
+        '201':
+          description: Created booking
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-  /bookings/{bookingId}:
+  /bookings/{id}:
     get:
-      tags: [Booking]
+      tags: [Bookings]
       summary: Get booking details
+      operationId: getBooking
+      security:
+        - bearerAuth: []
       parameters:
-        - name: bookingId
-          in: path
-          required: true
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/Id'
       responses:
-        200:
+        '200':
           description: Booking details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Booking'
-
-  /bookings/{bookingId}/cancel:
-    post:
-      tags: [Booking]
-      summary: Cancel booking
+                $ref: '#/components/schemas/BookingResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Bookings]
+      summary: Update booking dates
+      operationId: updateBooking
+      security:
+        - bearerAuth: []
       parameters:
-        - name: bookingId
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingUpdateRequest'
+      responses:
+        '200':
+          description: Updated booking. If additional payment is required, checkoutUrl is populated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Bookings]
+      summary: Cancel a booking
+      operationId: cancelBooking
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Booking cancelled
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bookings/user/{userId}:
+    get:
+      tags: [Bookings]
+      summary: List bookings for a user
+      operationId: listUserBookings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
           in: path
           required: true
           schema:
             type: integer
+            format: int64
       responses:
-        200:
-          description: Booking cancelled
+        '200':
+          description: User bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-  # ---------- PAYMENT ----------
-  /payments:
+  /payment:
     post:
-      tags: [Payment]
-      summary: Process payment
+      tags: [Payments]
+      summary: Create a payment or Stripe checkout session for a booking
+      operationId: processPayment
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -165,60 +512,287 @@ paths:
             schema:
               $ref: '#/components/schemas/PaymentRequest'
       responses:
-        200:
+        '200':
           description: Payment result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-  # ---------- NOTIFICATION ----------
-  /notifications/{userId}:
+  /payment/confirm:
+    post:
+      tags: [Payments]
+      summary: Confirm a Stripe checkout session
+      operationId: confirmStripeSession
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment confirmation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /payment/webhook:
+    post:
+      tags: [Payments]
+      summary: Handle Stripe webhook events
+      operationId: handleStripeWebhook
+      parameters:
+        - name: Stripe-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              description: Raw Stripe webhook payload.
+      responses:
+        '200':
+          description: Webhook processed
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /notifications/user/{userId}:
     get:
-      tags: [Notification]
-      summary: Get user notifications
+      tags: [Notifications]
+      summary: List notifications for a user
+      operationId: listUserNotifications
+      security:
+        - bearerAuth: []
       parameters:
         - name: userId
           in: path
           required: true
           schema:
             type: integer
+            format: int64
       responses:
-        200:
-          description: List of notifications
+        '200':
+          description: User notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-# ===================== COMPONENTS =====================
+  /notifications/user/{userId}/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Get unread notification count for a user
+      operationId: getUnreadNotificationCount
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Unread notification count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCountResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /notifications/{id}/read:
+    put:
+      tags: [Notifications]
+      summary: Mark one notification as read
+      operationId: markNotificationAsRead
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /notifications/user/{userId}/read-all:
+    put:
+      tags: [Notifications]
+      summary: Mark all notifications for a user as read
+      operationId: markAllNotificationsAsRead
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Notifications marked as read
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+    Sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+      example: name,asc
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Missing, invalid, or expired authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Authenticated user is not allowed to perform this action
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
-
-    UserRequest:
+    RegisterRequest:
       type: object
+      required: [name, email, phoneNumber, password]
       properties:
         name:
           type: string
+          minLength: 2
         email:
+          type: string
+          format: email
+        phoneNumber:
           type: string
         password:
           type: string
-        phone:
-          type: string
+          minLength: 6
+          format: password
 
     LoginRequest:
       type: object
+      required: [email, password]
       properties:
         email:
           type: string
+          format: email
         password:
           type: string
+          format: password
 
     AuthResponse:
       type: object
       properties:
+        id:
+          type: integer
+          format: int64
         token:
           type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, CUSTOMER]
 
-    Hotel:
+    RegisterResponse:
       type: object
       properties:
         id:
           type: integer
+          format: int64
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        phoneNumber:
+          type: string
+
+    HotelDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
         name:
           type: string
         location:
@@ -226,13 +800,96 @@ components:
         description:
           type: string
 
+    RoomDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        roomNumber:
+          type: integer
+        type:
+          type: string
+          enum: [SINGLE, DOUBLE, SUITE]
+        price:
+          type: number
+          format: double
+        available:
+          type: boolean
+        description:
+          type: string
+        hotelId:
+          type: integer
+          format: int64
+
+    ExternalHotelOfferDto:
+      type: object
+      properties:
+        provider:
+          type: string
+        hotelId:
+          type: string
+        name:
+          type: string
+        cityCode:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        offerId:
+          type: string
+        checkInDate:
+          type: string
+          format: date
+        checkOutDate:
+          type: string
+          format: date
+        adults:
+          type: integer
+        roomQuantity:
+          type: integer
+        roomType:
+          type: string
+        description:
+          type: string
+        priceTotal:
+          type: string
+        currency:
+          type: string
+
+    LiteApiBookableRoomRequest:
+      type: object
+      required: [hotelId, name, location]
+      properties:
+        hotelId:
+          type: string
+        name:
+          type: string
+        location:
+          type: string
+        address:
+          type: string
+        description:
+          type: string
+        priceTotal:
+          type: string
+
     BookingRequest:
       type: object
+      required: [userId, roomId, checkIn, checkOut]
       properties:
         userId:
           type: integer
+          format: int64
         roomId:
           type: integer
+          format: int64
         checkIn:
           type: string
           format: date
@@ -240,21 +897,131 @@ components:
           type: string
           format: date
 
-    Booking:
+    BookingUpdateRequest:
       type: object
+      required: [checkIn, checkOut]
       properties:
-        id:
-          type: integer
-        status:
+        checkIn:
           type: string
-        totalAmount:
-          type: number
+          format: date
+        checkOut:
+          type: string
+          format: date
 
-    PaymentRequest:
+    BookingResponse:
       type: object
       properties:
         bookingId:
           type: integer
+          format: int64
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, CANCELLED]
+        totalAmount:
+          type: number
+          format: double
+        checkIn:
+          type: string
+          format: date
+        checkOut:
+          type: string
+          format: date
+        roomId:
+          type: integer
+          format: int64
+        roomNumber:
+          type: integer
+        roomType:
+          type: string
+          enum: [SINGLE, DOUBLE, SUITE]
+        hotelName:
+          type: string
+        paymentRequired:
+          type: boolean
+          description: True when an updated booking requires additional payment.
+        additionalAmount:
+          type: number
+          format: double
+        checkoutUrl:
+          type: string
+          format: uri
+
+    PaymentRequest:
+      type: object
+      required: [bookingId, amount]
+      properties:
+        bookingId:
+          type: integer
+          format: int64
         amount:
           type: number
+          format: double
 
+    PaymentResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        transactionId:
+          type: string
+        checkoutUrl:
+          type: string
+          format: uri
+
+    NotificationDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        message:
+          type: string
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    UnreadCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int64
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    HotelPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/HotelDto'
+        pageable:
+          type: object
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        last:
+          type: boolean
+        size:
+          type: integer
+        number:
+          type: integer
+        sort:
+          type: object
+        numberOfElements:
+          type: integer
+        first:
+          type: boolean
+        empty:
+          type: boolean

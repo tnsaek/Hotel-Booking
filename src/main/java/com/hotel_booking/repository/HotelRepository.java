@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
+    java.util.Optional<Hotel> findFirstByNameAndLocation(String name, String location);
     Page<Hotel> findByNameContainingIgnoreCase(String name, Pageable pageable);
     Page<Hotel> findByLocationContainingIgnoreCase(String location, Pageable pageable);
     Page<Hotel> findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(String name, String location, Pageable pageable);
